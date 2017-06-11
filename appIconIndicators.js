@@ -31,17 +31,38 @@ const AppIconIndicatorBase = new Lang.Class({
     Name: 'DashToDock.AppIconIndicatorBase',
 
     _init: function(settings, appIcon) {
-
+        // ? RENAME appIcon to SOURCE?
         this._settings = settings;
         this._appIcon = appIcon;
 
         this._signalsHandler = new Utils.GlobalSignalsHandler();
 
+        this._nWindows = 0;
+
     },
 
     update:function() {
 
+        this._updateCounterClass();
+
     },
+
+    _updateCounterClass: function() {
+        let maxN = 4;
+        this._nWindows = Math.min(getInterestingWindows(this._appIcon.app, this._settings).length, maxN);
+
+        for (let i = 1; i <= maxN; i++) {
+            let className = 'running' + i;
+            if (i != this._nWindows)
+                this._appIcon.actor.remove_style_class_name(className);
+            else
+                this._appIcon.actor.add_style_class_name(className);
+        }
+
+        //if (this._dots)
+        //    this._dots.queue_repaint();
+    },
+
 
     destroy: function() {
         this._signalsHandler.destroy();
@@ -136,7 +157,8 @@ const RunningDotsIndicator = new Lang.Class({
         let spacing = radius + borderWidth; // separation between the dots
 
         //TODO. Get n in this class? check on n!==0 ?
-        let n = this._appIcon._nWindows;
+        //let n = this._appIcon._nWindows;
+        let n = this._nWindows;
 
         cr.setLineWidth(borderWidth);
         Clutter.cairo_set_source_color(cr, borderColor);
@@ -183,3 +205,23 @@ const RunningDotsIndicator = new Lang.Class({
     },
 
 });
+
+
+
+// TODO THIS IS A DUPLICATED OF appIcons.js ..
+// Filter out unnecessary windows, for instance
+// nautilus desktop window.
+function getInterestingWindows(app, settings) {
+    let windows = app.get_windows().filter(function(w) {
+        return !w.skip_taskbar;
+    });
+
+    // When using workspace isolation, we filter out windows
+    // that are not in the current workspace
+    if (settings.get_boolean('isolate-workspaces'))
+        windows = windows.filter(function(w) {
+            return w.get_workspace().index() == global.screen.get_active_workspace_index();
+        });
+
+    return windows;
+}
