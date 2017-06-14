@@ -174,9 +174,6 @@ const MyAppIcon = new Lang.Class({
             this._indicator = new AppIconIndicators.RunningDotsIndicator(this._dtdSettings, this);
             break;
         }
-
-        this._indicator.update();
-
     },
 
     _optionalScrollCycleWindows: function() {
@@ -252,7 +249,6 @@ const MyAppIcon = new Lang.Class({
         if (this._menu && this._menu.isOpen)
             this._menu.update();
 
-        this._indicator.update();
         this.updateIconGeometry();
     },
 
@@ -297,8 +293,6 @@ const MyAppIcon = new Lang.Class({
         else
             this.parent();
         this._onFocusAppChanged();
-        if (this._indicator !== null)
-            this._indicator.update();
     },
 
     popupMenu: function() {
